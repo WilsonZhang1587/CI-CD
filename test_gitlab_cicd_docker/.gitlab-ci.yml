@@ -1,0 +1,42 @@
+image: docker:dind
+
+variables:
+  DOCKER_TLS_CERTDIR: "/certs"
+
+services:
+  - docker:dind
+
+.test-docker-runner:
+  tags:
+    - ci,ssh
+
+stages:
+  - test
+  - build
+  - deploy
+
+before_script:
+  - echo "started by test-docker-runner"
+
+test:
+  extends:
+    - .test-docker-runner
+  stage: test
+  script:
+    - echo "running test"
+    - docker build -t react_test .
+    - docker run -d -p 3001:3000 react_test
+
+build:
+  extends:
+    - .test-docker-runner
+  stage: build
+  script:
+    - echo "running build"
+
+deploy:
+  extends:
+    - .test-docker-runner
+  stage: deploy
+  script:
+    - echo "running deploy"
